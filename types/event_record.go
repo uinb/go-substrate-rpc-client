@@ -519,50 +519,55 @@ func (e EventRecordsRaw) DecodeEventRecords(m *Metadata, t interface{}) error { 
 
 		// fmt.Printf("event #%v is in module %v with event name %v\n", i, moduleName, eventName)
 
-		log.Debug(fmt.Sprintf("event #%v is in module %v with event name %v", i, moduleName, eventName))
+		// log.Debug(fmt.Sprintf("event #%v is in module %v with event name %v", i, moduleName, eventName))
 
-		// check whether name for eventID exists in t
+		// // check whether name for eventID exists in t
 		field := val.FieldByName(fmt.Sprintf("%v_%v", moduleName, eventName))
-		if !field.IsValid() {
-			return fmt.Errorf("unable to find field %v_%v for event #%v with EventID %v", moduleName, eventName, i, id)
-		}
+		if field.IsValid() {
 
-		// create a pointer to with the correct type that will hold the decoded event
-		holder := reflect.New(field.Type().Elem())
+			// create a pointer to with the correct type that will hold the decoded event
+			holder := reflect.New(field.Type().Elem())
 
-		// ensure first field is for Phase, last field is for Topics
-		numFields := holder.Elem().NumField()
-		if numFields < 2 {
-			return fmt.Errorf("expected event #%v with EventID %v, field %v_%v to have at least 2 fields "+
-				"(for Phase and Topics), but has %v fields", i, id, moduleName, eventName, numFields)
-		}
-		phaseField := holder.Elem().FieldByIndex([]int{0})
-		if phaseField.Type() != reflect.TypeOf(phase) {
-			return fmt.Errorf("expected the first field of event #%v with EventID %v, field %v_%v to be of type "+
-				"types.Phase, but got %v", i, id, moduleName, eventName, phaseField.Type())
-		}
-		topicsField := holder.Elem().FieldByIndex([]int{numFields - 1})
-		if topicsField.Type() != reflect.TypeOf([]Hash{}) {
-			return fmt.Errorf("expected the last field of event #%v with EventID %v, field %v_%v to be of type "+
-				"[]types.Hash for Topics, but got %v", i, id, moduleName, eventName, topicsField.Type())
-		}
+			// ensure first field is for Phase, last field is for Topics
+			numFields := holder.Elem().NumField()
+			if numFields < 2 {
+				return fmt.Errorf("expected event #%v with EventID %v, field %v_%v to have at least 2 fields "+
+					"(for Phase and Topics), but has %v fields", i, id, moduleName, eventName, numFields)
+			}
+			phaseField := holder.Elem().FieldByIndex([]int{0})
+			if phaseField.Type() != reflect.TypeOf(phase) {
+				return fmt.Errorf("expected the first field of event #%v with EventID %v, field %v_%v to be of type "+
+					"types.Phase, but got %v", i, id, moduleName, eventName, phaseField.Type())
+			}
+			topicsField := holder.Elem().FieldByIndex([]int{numFields - 1})
+			if topicsField.Type() != reflect.TypeOf([]Hash{}) {
+				return fmt.Errorf("expected the last field of event #%v with EventID %v, field %v_%v to be of type "+
+					"[]types.Hash for Topics, but got %v", i, id, moduleName, eventName, topicsField.Type())
+			}
 
-		// set the phase we decoded earlier
-		phaseField.Set(reflect.ValueOf(phase))
+			// set the phase we decoded earlier
+			phaseField.Set(reflect.ValueOf(phase))
 
-		// set the remaining fields
-		for j := 1; j < numFields; j++ {
-			err = decoder.Decode(holder.Elem().FieldByIndex([]int{j}).Addr().Interface())
+			// set the remaining fields
+			for j := 1; j < numFields; j++ {
+				err = decoder.Decode(holder.Elem().FieldByIndex([]int{j}).Addr().Interface())
+				if err != nil {
+					return fmt.Errorf("unable to decode field %v event #%v with EventID %v, field %v_%v: %v", j, i, id, moduleName,
+						eventName, err)
+				}
+			}
+
+			// add the decoded event to the slice
+			field.Set(reflect.Append(field, holder.Elem()))
+
+			log.Debug(fmt.Sprintf("decoded event #%v", i))
+		} else {
+			raw := Si1TypeDef{}
+			err = decoder.Decode(&raw)
 			if err != nil {
-				return fmt.Errorf("unable to decode field %v event #%v with EventID %v, field %v_%v: %v", j, i, id, moduleName,
-					eventName, err)
+				return fmt.Errorf("unable to decode event as raw, %v", err)
 			}
 		}
-
-		// add the decoded event to the slice
-		field.Set(reflect.Append(field, holder.Elem()))
-
-		log.Debug(fmt.Sprintf("decoded event #%v", i))
 	}
 	return nil
 }
