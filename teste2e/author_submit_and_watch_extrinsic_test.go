@@ -21,9 +21,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/centrifuge/go-substrate-rpc-client/v4/rpc/author"
-	"github.com/centrifuge/go-substrate-rpc-client/v4/signature"
-	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
+	"github.com/uinb/go-substrate-rpc-client/v4/rpc/author"
+	"github.com/uinb/go-substrate-rpc-client/v4/signature"
+	"github.com/uinb/go-substrate-rpc-client/v4/types"
 	"github.com/stretchr/testify/assert"
 )
 

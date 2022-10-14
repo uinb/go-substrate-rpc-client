@@ -21,7 +21,7 @@ import (
 
 	fuzz "github.com/google/gofuzz"
 
-	. "github.com/centrifuge/go-substrate-rpc-client/v4/types"
+	. "github.com/uinb/go-substrate-rpc-client/v4/types"
 )
 
 var testMultiSig1 = MultiSignature{IsEd25519: true, AsEd25519: NewSignature(hash64)}

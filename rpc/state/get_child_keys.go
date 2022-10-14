@@ -17,8 +17,8 @@
 package state
 
 import (
-	"github.com/centrifuge/go-substrate-rpc-client/v4/client"
-	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
+	"github.com/uinb/go-substrate-rpc-client/v4/client"
+	"github.com/uinb/go-substrate-rpc-client/v4/types"
 )
 
 // GetChildKeys retreives the keys with the given prefix of a specific child storage

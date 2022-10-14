@@ -23,7 +23,7 @@ import (
 	"path"
 	"testing"
 
-	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
+	"github.com/uinb/go-substrate-rpc-client/v4/types"
 )
 
 //go:generate go run ./test-gen test_data meta_bytes storage_bytes

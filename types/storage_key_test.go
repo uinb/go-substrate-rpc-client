@@ -22,10 +22,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/centrifuge/go-substrate-rpc-client/v4/hash"
-	"github.com/centrifuge/go-substrate-rpc-client/v4/xxhash"
+	"github.com/uinb/go-substrate-rpc-client/v4/hash"
+	"github.com/uinb/go-substrate-rpc-client/v4/xxhash"
 
-	. "github.com/centrifuge/go-substrate-rpc-client/v4/types"
+	. "github.com/uinb/go-substrate-rpc-client/v4/types"
 	"github.com/stretchr/testify/assert"
 )
 
