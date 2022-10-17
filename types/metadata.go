@@ -344,6 +344,15 @@ func (m *Metadata) ExistsModuleMetadata(module string) bool {
 	}
 }
 
+func (m *Metadata) FindEventArgsForEventID(eventID EventID) (Si1Variant, error) {
+	switch m.Version {
+	case 14:
+		return m.AsMetadataV14.FindEventArgsForEventID(eventID)
+	default:
+		return Si1Variant{}, fmt.Errorf("unsupported metadata version")
+	}
+}
+
 // Default implementation of Hasher() for a Storage entry
 // It fails when called if entry is not a plain type.
 func DefaultPlainHasher(entry StorageEntryMetadata) (hash.Hash, error) {

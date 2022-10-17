@@ -23,8 +23,8 @@ import (
 	"io"
 	"reflect"
 
-	"github.com/uinb/go-substrate-rpc-client/v4/scale"
 	"github.com/ethereum/go-ethereum/log"
+	"github.com/uinb/go-substrate-rpc-client/v4/scale"
 )
 
 // EventRecordsRaw is a raw record for a set of events, represented as the raw bytes. It exists since
@@ -559,8 +559,11 @@ func (e EventRecordsRaw) DecodeEventRecords(m *Metadata, t interface{}) error { 
 
 			log.Debug(fmt.Sprintf("decoded event #%v", i))
 		} else {
-			raw := Si1TypeDef{}
-			err = decoder.Decode(&raw)
+			si1, err := m.FindEventArgsForEventID(id)
+			if err != nil {
+				return fmt.Errorf("unable to find event %v", err)
+			}
+			err = decoder.Decode(&si1)
 			if err != nil {
 				return fmt.Errorf("unable to decode event as raw, %v", err)
 			}
