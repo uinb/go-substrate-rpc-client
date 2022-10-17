@@ -563,8 +563,7 @@ func (e EventRecordsRaw) DecodeEventRecords(m *Metadata, t interface{}) error { 
 			if err != nil {
 				return fmt.Errorf("unable to find event %v", err)
 			}
-
-			for i, f := range si1.Fields {
+			for i, f := range si1 {
 				err = decoder.Decode(&f)
 				if err != nil {
 					return fmt.Errorf("unable to decode field %v of event %v: %v", i, id, err)

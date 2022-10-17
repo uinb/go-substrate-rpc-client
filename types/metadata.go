@@ -344,12 +344,12 @@ func (m *Metadata) ExistsModuleMetadata(module string) bool {
 	}
 }
 
-func (m *Metadata) FindEventArgsForEventID(eventID EventID) (Si1Variant, error) {
+func (m *Metadata) FindEventArgsForEventID(eventID EventID) ([]Si1TypeDef, error) {
 	switch m.Version {
 	case 14:
 		return m.AsMetadataV14.FindEventArgsForEventID(eventID)
 	default:
-		return Si1Variant{}, fmt.Errorf("unsupported metadata version")
+		return []Si1TypeDef{}, fmt.Errorf("unsupported metadata version")
 	}
 }
 

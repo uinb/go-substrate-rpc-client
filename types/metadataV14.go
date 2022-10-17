@@ -429,7 +429,7 @@ func (s StorageEntryTypeV14) Encode(encoder scale.Encoder) error {
 	return nil
 }
 
-func (m *MetadataV14) FindEventArgsForEventID(eventID EventID) (Si1Variant, error) {
+func (m *MetadataV14) FindEventArgsForEventID(eventID EventID) ([]Si1TypeDef, error) {
 	for _, mod := range m.Pallets {
 		if !mod.HasEvents {
 			continue
@@ -443,11 +443,20 @@ func (m *MetadataV14) FindEventArgsForEventID(eventID EventID) (Si1Variant, erro
 			if len(typ.Def.Variant.Variants) > 0 {
 				for _, vars := range typ.Def.Variant.Variants {
 					if uint8(vars.Index) == eventID[1] {
-						return vars, nil
+						defs := make([]Si1TypeDef, len(vars.Fields))
+						for i, f := range vars.Fields {
+							varType := f.Type.Int64()
+							if varTyp, found := m.EfficientLookup[varType]; found {
+								defs = append(defs, varTyp.Def)
+							} else {
+								return defs, fmt.Errorf("unable to find arg %v of events: %v", i, eventID)
+							}
+						}
+						return defs, nil
 					}
 				}
 			}
 		}
 	}
-	return Si1Variant{}, fmt.Errorf("unable to find event args for event_id: %v", eventID)
+	return []Si1TypeDef{}, fmt.Errorf("unable to find event args for event_id: %v", eventID)
 }
