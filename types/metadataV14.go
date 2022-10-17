@@ -48,9 +48,7 @@ func (m *MetadataV14) Decode(decoder scale.Decoder) error {
 	if err != nil {
 		return err
 	}
-
 	m.EfficientLookup = m.Lookup.toMap()
-
 	err = decoder.Decode(&m.Pallets)
 	if err != nil {
 		return err
@@ -446,10 +444,10 @@ func (m *MetadataV14) FindEventArgsForEventID(eventID EventID) ([]Si1TypeDef, er
 						defs := make([]Si1TypeDef, len(vars.Fields))
 						for i, f := range vars.Fields {
 							varType := f.Type.Int64()
-							if varTyp, found := m.EfficientLookup[varType]; found {
-								defs = append(defs, varTyp.Def)
+							if lookup, found := m.EfficientLookup[varType]; found {
+								defs = append(defs, lookup.Def)
 							} else {
-								return defs, fmt.Errorf("unable to find arg %v of events: %v", i, eventID)
+								return []Si1TypeDef{}, fmt.Errorf("unable to find arg %v of events: %v", i, eventID)
 							}
 						}
 						return defs, nil

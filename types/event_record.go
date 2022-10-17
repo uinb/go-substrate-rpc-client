@@ -559,12 +559,12 @@ func (e EventRecordsRaw) DecodeEventRecords(m *Metadata, t interface{}) error { 
 
 			log.Debug(fmt.Sprintf("decoded event #%v", i))
 		} else {
-			si1, err := m.FindEventArgsForEventID(id)
+			d, err := m.FindEventArgsForEventID(id)
 			if err != nil {
 				return fmt.Errorf("unable to find event %v", err)
 			}
-			for i, f := range si1 {
-				err = decoder.Decode(&f)
+			for i, f := range d {
+				err = f.DecodeIgnore(m, decoder)
 				if err != nil {
 					return fmt.Errorf("unable to decode field %v of event %v: %v", i, id, err)
 				}
@@ -572,6 +572,155 @@ func (e EventRecordsRaw) DecodeEventRecords(m *Metadata, t interface{}) error { 
 		}
 	}
 	return nil
+}
+
+func (d *Si1TypeDef) DecodeIgnore(m *Metadata, decoder *scale.Decoder) error {
+	if d.IsComposite {
+		v := d.Composite.Fields
+		for _, f := range v {
+			tyId := f.Type.Int64()
+			if ty, ok := m.AsMetadataV14.EfficientLookup[tyId]; ok {
+				ty.Def.DecodeIgnore(m, decoder)
+			}
+		}
+		return nil
+	}
+	if d.IsVariant {
+		x := uint8(0)
+		decoder.Decode(&x)
+		variant := d.Variant.Variants[x]
+		for _, f := range variant.Fields {
+			tyId := f.Type.Int64()
+			if ty, ok := m.AsMetadataV14.EfficientLookup[tyId]; ok {
+				ty.Def.DecodeIgnore(m, decoder)
+			}
+		}
+		return nil
+	}
+	if d.IsSequence {
+		n, err := decoder.DecodeUintCompact()
+		if err != nil {
+			return err
+		}
+		tyId := d.Sequence.Type.Int64()
+		if ty, ok := m.AsMetadataV14.EfficientLookup[tyId]; ok {
+			for i := uint64(0); i < n.Uint64(); i++ {
+				ty.Def.DecodeIgnore(m, decoder)
+			}
+		}
+		return nil
+	}
+	if d.IsArray {
+		tyId := d.Array.Type.Int64()
+		if ty, ok := m.AsMetadataV14.EfficientLookup[tyId]; ok {
+			for i := uint32(0); i < uint32(d.Array.Len); i++ {
+				ty.Def.DecodeIgnore(m, decoder)
+			}
+		}
+		return nil
+	}
+	if d.IsTuple {
+		for _, v := range d.Tuple {
+			tyId := v.Int64()
+			if ty, ok := m.AsMetadataV14.EfficientLookup[tyId]; ok {
+				ty.Def.DecodeIgnore(m, decoder)
+			}
+		}
+		return nil
+	}
+	if d.IsPrimitive {
+		switch d.Primitive.Si0TypeDefPrimitive {
+		case IsBool:
+			x := false
+			decoder.Decode(&x)
+		case IsChar:
+			x := '0'
+			decoder.Decode(&x)
+		case IsStr:
+			var b []byte
+			err := decoder.Decode(&b)
+			if err != nil {
+				return err
+			}
+		case IsU8:
+			x := uint8(0)
+			decoder.Decode(&x)
+		case IsU16:
+			x := uint16(0)
+			decoder.Decode(&x)
+		case IsU32:
+			x := uint32(0)
+			decoder.Decode(&x)
+		case IsU64:
+			x := uint64(0)
+			decoder.Decode(&x)
+		case IsU128:
+			b := make([]byte, 16)
+			decoder.Decode(&b)
+		case IsU256:
+			b := make([]byte, 32)
+			decoder.Decode(&b)
+		case IsI8:
+			x := int8(0)
+			decoder.Decode(&x)
+		case IsI16:
+			x := int16(0)
+			decoder.Decode(&x)
+		case IsI32:
+			x := int32(0)
+			decoder.Decode(&x)
+		case IsI64:
+			x := int64(0)
+			decoder.Decode(&x)
+		case IsI128:
+			b := make([]byte, 16)
+			decoder.Decode(&b)
+		case IsI256:
+			b := make([]byte, 32)
+			decoder.Decode(&b)
+		default:
+			return fmt.Errorf("Si0TypeDefPrimitive do not support this type: %v", d)
+		}
+		return nil
+	}
+	if d.IsCompact {
+		tyId := d.Compact.Type.Int64()
+		if ty, ok := m.AsMetadataV14.EfficientLookup[tyId]; ok {
+			if ty.Def.IsPrimitive {
+				// FIXME?
+				// ty.Def.DecodeIgnore(m, decoder)
+				_, e := decoder.DecodeUintCompact()
+				return e
+			}
+			if ty.Def.IsComposite {
+				v := ty.Def.Composite.Fields
+				for _, f := range v {
+					tyty := f.Type.Int64()
+					if tt, fine := m.AsMetadataV14.EfficientLookup[tyty]; fine {
+						if tt.Def.IsPrimitive {
+							// FIXME?
+							// tt.Def.DecodeIgnore(m, decoder)
+							_, e := decoder.DecodeUintCompact()
+							if e != nil {
+								return e
+							}
+						} else {
+							return fmt.Errorf("Compact type can only have primitive types")
+						}
+					}
+				}
+				return nil
+			}
+		}
+		return nil
+	}
+	if d.IsBitSequence {
+		return fmt.Errorf("unsupported type %v(BitSequence) in event", d)
+	}
+	if d.IsHistoricMetaCompat {
+		return fmt.Errorf("unsupported type %v(HistoricMetaCompat) in event", d)
+	}
+	return fmt.Errorf("Couldn't decode type %v", d)
 }
 
 // Phase is an enum describing the current phase of the event (applying the extrinsic or finalized)
