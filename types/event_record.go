@@ -509,6 +509,8 @@ func (e EventRecordsRaw) DecodeEventRecords(m *Metadata, t interface{}) error { 
 
 		// ask metadata for method & event name for event
 		moduleName, eventName, err := m.FindEventNamesForEventID(id)
+
+		fmt.Printf("decoding event %v_%v\n", moduleName, eventName)
 		// moduleName, eventName, err := "System", "ExtrinsicSuccess", nil
 		if err != nil {
 			return fmt.Errorf("unable to find event with EventID %v in metadata for event #%v: %s", id, i, err)
@@ -569,6 +571,7 @@ func (e EventRecordsRaw) DecodeEventRecords(m *Metadata, t interface{}) error { 
 					return fmt.Errorf("unable to decode field %v of event %v: %v", i, id, err)
 				}
 			}
+			decoder.ReadOneByte()
 		}
 	}
 	return nil
@@ -655,10 +658,10 @@ func (d *Si1TypeDef) DecodeIgnore(m *Metadata, decoder *scale.Decoder) error {
 			x := uint64(0)
 			decoder.Decode(&x)
 		case IsU128:
-			b := make([]byte, 16)
+			var b [16]byte
 			decoder.Decode(&b)
 		case IsU256:
-			b := make([]byte, 32)
+			var b [32]byte
 			decoder.Decode(&b)
 		case IsI8:
 			x := int8(0)
@@ -673,10 +676,10 @@ func (d *Si1TypeDef) DecodeIgnore(m *Metadata, decoder *scale.Decoder) error {
 			x := int64(0)
 			decoder.Decode(&x)
 		case IsI128:
-			b := make([]byte, 16)
+			var b [16]byte
 			decoder.Decode(&b)
 		case IsI256:
-			b := make([]byte, 32)
+			var b [32]byte
 			decoder.Decode(&b)
 		default:
 			return fmt.Errorf("Si0TypeDefPrimitive do not support this type: %v", d)

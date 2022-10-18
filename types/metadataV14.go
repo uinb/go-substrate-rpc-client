@@ -441,7 +441,7 @@ func (m *MetadataV14) FindEventArgsForEventID(eventID EventID) ([]Si1TypeDef, er
 			if len(typ.Def.Variant.Variants) > 0 {
 				for _, vars := range typ.Def.Variant.Variants {
 					if uint8(vars.Index) == eventID[1] {
-						defs := make([]Si1TypeDef, len(vars.Fields))
+						defs := make([]Si1TypeDef, 0)
 						for i, f := range vars.Fields {
 							varType := f.Type.Int64()
 							if lookup, found := m.EfficientLookup[varType]; found {
@@ -450,6 +450,7 @@ func (m *MetadataV14) FindEventArgsForEventID(eventID EventID) ([]Si1TypeDef, er
 								return []Si1TypeDef{}, fmt.Errorf("unable to find arg %v of events: %v", i, eventID)
 							}
 						}
+						fmt.Printf("event %v args len = %v\n", eventID, len(defs))
 						return defs, nil
 					}
 				}

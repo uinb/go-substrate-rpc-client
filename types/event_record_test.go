@@ -344,3 +344,60 @@ func TestPhase(t *testing.T) {
 	assertDecodeNilData[Phase](t)
 	assertEncodeEmptyObj[Phase](t, 0)
 }
+
+func ExampleEventRecordsRaw_Decode1() {
+	e := EventRecordsRaw(MustHexDecodeString(
+         "0x18" +
+            "0000000000" + // phase: applyextrinsic(0)
+            "0000" + // module+event: system_extrinsicsuccess
+            "98e1400900000000" + // weight
+            "02" + // mandatory
+            "00" + // paysfee = yes
+            "00" + // topics
+
+            "0001000000" + // phase: applyextrinsic(1)
+            "0508" + // module+event: balances_withdraw
+            "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d" + // who
+            "b932c261030000000000000000000000" + // amount
+            "00" + // topics
+
+            "0001000000" + // phase: applyextrinsic
+            "1600" + // module+event: token_tokenissued
+            "0a000000" + // tokenid: 10
+            "00" + // variant of xtoken
+            "0c616263" + // name
+            "2c0101010101010101010101" + // contract
+            "00000000000000000000000000000000" + // total
+            "00" + // stable
+            "0a" + // decimal
+            "00" + // topics
+            
+            "0001000000" + // phase: applyextrinsic
+            "1400" + // module+event: sudo_sudid
+            "00" + // sudo_result?
+            "00" + // topics
+
+            "0001000000" + //phase: applyextrinsic
+            "0507" + // module+event: balances_deposit
+            "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d" + //who
+            "b932c261030000000000000000000000" + //amount
+            "00" + // topics
+            
+            "0001000000" + // phase: applyextrinsic
+            "0000" + // module+event
+            "204e000000000000" + // weight
+            "00" + // normal
+            "00" + // paysfee=yes
+            "00", // topics
+	))
+
+	var meta Metadata
+	err := DecodeFromHex(FusotaoMetadata, &meta)
+
+	events := EventRecords{}
+	err = e.DecodeEventRecords(&meta, &events)
+	if err != nil {
+		panic(err)
+	}
+    fmt.Printf("Got %v System_ExtrinsicSuccess events\n", len(events.System_ExtrinsicSuccess))
+}
