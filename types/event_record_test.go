@@ -400,4 +400,12 @@ func ExampleEventRecordsRaw_Decode1() {
 		panic(err)
 	}
     fmt.Printf("Got %v System_ExtrinsicSuccess events\n", len(events.System_ExtrinsicSuccess))
+    fmt.Printf("Got %v Balances_Withdraw events\n", len(events.Balances_Withdraw))
+    fmt.Printf("Got %v Balances_Deposit events\n", len(events.Balances_Deposit))
+    fmt.Printf("Got %v Sudo_Sudid events\n", len(events.Sudo_Sudid))
+
+    // Output: Got 2 System_ExtrinsicSuccess events
+	// Got 1 Balances_Withdraw events
+	// Got 1 Balances_Deposit events
+	// Got 1 Sudo_Sudid events
 }

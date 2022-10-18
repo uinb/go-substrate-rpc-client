@@ -510,7 +510,6 @@ func (e EventRecordsRaw) DecodeEventRecords(m *Metadata, t interface{}) error { 
 		// ask metadata for method & event name for event
 		moduleName, eventName, err := m.FindEventNamesForEventID(id)
 
-		fmt.Printf("decoding event %v_%v\n", moduleName, eventName)
 		// moduleName, eventName, err := "System", "ExtrinsicSuccess", nil
 		if err != nil {
 			return fmt.Errorf("unable to find event with EventID %v in metadata for event #%v: %s", id, i, err)
@@ -571,7 +570,8 @@ func (e EventRecordsRaw) DecodeEventRecords(m *Metadata, t interface{}) error { 
 					return fmt.Errorf("unable to decode field %v of event %v: %v", i, id, err)
 				}
 			}
-			decoder.ReadOneByte()
+			var topics []Hash
+			decoder.Decode(&topics)
 		}
 	}
 	return nil

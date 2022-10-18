@@ -450,7 +450,6 @@ func (m *MetadataV14) FindEventArgsForEventID(eventID EventID) ([]Si1TypeDef, er
 								return []Si1TypeDef{}, fmt.Errorf("unable to find arg %v of events: %v", i, eventID)
 							}
 						}
-						fmt.Printf("event %v args len = %v\n", eventID, len(defs))
 						return defs, nil
 					}
 				}
